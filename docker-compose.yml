@@ -1,0 +1,29 @@
+version: '3'
+
+services:
+  rabbitmq:
+    image: "rabbitmq:3-management"
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+
+  celery-worker:
+    build: .
+    depends_on:
+      - rabbitmq
+      - otel-collector
+    environment:
+      - CELERY_BROKER_URL=amqp://guest:guest@rabbitmq:5672//
+    command: ["celery", "-A", "app.celery_app", "worker", "--loglevel=info"]
+
+  otel-collector:
+    image: otel/opentelemetry-collector:0.69.0
+    ports:
+      - "4317:4317"
+      - "55680:55680"
+    volumes:
+      - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml
+    command: ["--config=/etc/otel-collector-config.yaml"]
