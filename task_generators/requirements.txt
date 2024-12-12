@@ -1,0 +1,4 @@
+celery>=5.2,<6.0
+opentelemetry-instrumentation-celery
+opentelemetry-exporter-otlp
+opentelemetry-instrumentation

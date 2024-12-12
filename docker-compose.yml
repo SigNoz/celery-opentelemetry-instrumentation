@@ -1,29 +1,160 @@
-version: '3'
-
 services:
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:latest
+    container_name: otel-collector
+    ports:
+      - "4317:4317"
+      - "4318:4318"
+    volumes:
+      - ./opentelemetry-collector/config.yaml:/etc/otel-collector/config.yaml
+    command: ["--config", "/etc/otel-collector/config.yaml"]
+    networks:
+      - mynetwork
+
   rabbitmq:
-    image: "rabbitmq:3-management"
+    container_name: rabbitmq
+    image: rabbitmq:3-management
     ports:
       - "5672:5672"
-      - "15672:15672"
+      - "15672:15672"  # Management UI
     environment:
       RABBITMQ_DEFAULT_USER: guest
       RABBITMQ_DEFAULT_PASS: guest
+    networks:
+      - mynetwork
 
-  celery-worker:
-    build: .
+  celery_worker1:
+    container_name: celery_worker1
+    build: ./celery_app
+    volumes:
+      - ./tasks:/code/tasks
+    environment:
+      - CELERY_BROKER_URL=amqp://guest:guest@rabbitmq:5672//
+      - OTEL_SERVICE_NAME=worker1
+      - OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
+      - OTEL_EXPORTER_OTLP_LOGS_ENDPOINT=http://otel-collector:4318/v1/logs
+      - OTEL_EXPORTER_OTLP_METRICS_ENDPOINT=http://otel-collector:4318/v1/metrics
+      - OTEL_EXPORTER_OTLP_TRACES_ENDPOINT=http://otel-collector:4318/v1/traces
+    command: opentelemetry-instrument celery -A celery_app.celery:app worker --loglevel=info -Q queue1,queue2,queue3,queue4
     depends_on:
       - rabbitmq
       - otel-collector
+    networks:
+      - mynetwork
+
+  celery_worker2:
+    container_name: celery_worker2
+    build: ./celery_app
+    volumes:
+      - ./tasks:/code/tasks
     environment:
       - CELERY_BROKER_URL=amqp://guest:guest@rabbitmq:5672//
-    command: ["celery", "-A", "app.celery_app", "worker", "--loglevel=info"]
+      - OTEL_SERVICE_NAME=worker2
+      - OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
+      - OTEL_EXPORTER_OTLP_LOGS_ENDPOINT=http://otel-collector:4318/v1/logs
+      - OTEL_EXPORTER_OTLP_METRICS_ENDPOINT=http://otel-collector:4318/v1/metrics
+      - OTEL_EXPORTER_OTLP_TRACES_ENDPOINT=http://otel-collector:4318/v1/traces
+    command: opentelemetry-instrument celery -A celery_app.celery:app worker --loglevel=info -Q queue1,queue2,queue3,queue4
+    depends_on:
+      - rabbitmq
+      - otel-collector
+    networks:
+      - mynetwork
 
-  otel-collector:
-    image: otel/opentelemetry-collector:0.69.0
+  flower:
+    container_name: flower
+    build: ./flower
     ports:
-      - "4317:4317"
-      - "55680:55680"
-    volumes:
-      - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml
-    command: ["--config=/etc/otel-collector-config.yaml"]
+      - "5555:5555"
+    environment:
+      - CELERY_BROKER_URL=amqp://guest:guest@rabbitmq:5672//
+    command: celery --broker=amqp://guest:guest@rabbitmq:5672// flower --port=5555
+    depends_on:
+      - rabbitmq
+      - otel-collector
+    networks:
+      - mynetwork
+
+  task_generator1:
+    container_name: task_generator1
+    build: ./task_generators
+    command: sh -c "sleep 5 && opentelemetry-instrument python generator1.py"
+    environment:
+      - CELERY_BROKER_URL=amqp://guest:guest@rabbitmq:5672//
+      - TASK_DELAY=10
+      - OTEL_SERVICE_NAME=generator1
+      - OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
+      - OTEL_EXPORTER_OTLP_LOGS_ENDPOINT=http://otel-collector:4318/v1/logs
+      - OTEL_EXPORTER_OTLP_METRICS_ENDPOINT=http://otel-collector:4318/v1/metrics
+      - OTEL_EXPORTER_OTLP_TRACES_ENDPOINT=http://otel-collector:4318/v1/traces
+    depends_on:
+      - rabbitmq
+      - otel-collector
+      - celery_worker1
+      - celery_worker2
+    networks:
+      - mynetwork
+
+  task_generator2:
+    container_name: task_generator2
+    build: ./task_generators
+    command: sh -c "sleep 5 && opentelemetry-instrument python generator2.py"
+    environment:
+      - CELERY_BROKER_URL=amqp://guest:guest@rabbitmq:5672//
+      - TASK_DELAY=15
+      - OTEL_SERVICE_NAME=generator2
+      - OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
+      - OTEL_EXPORTER_OTLP_LOGS_ENDPOINT=http://otel-collector:4318/v1/logs
+      - OTEL_EXPORTER_OTLP_METRICS_ENDPOINT=http://otel-collector:4318/v1/metrics
+      - OTEL_EXPORTER_OTLP_TRACES_ENDPOINT=http://otel-collector:4318/v1/traces
+    depends_on:
+      - rabbitmq
+      - otel-collector
+      - celery_worker1
+      - celery_worker2
+    networks:
+      - mynetwork
+
+  task_generator3:
+    container_name: task_generator3
+    build: ./task_generators
+    command: sh -c "sleep 5 && opentelemetry-instrument python generator3.py"
+    environment:
+      - CELERY_BROKER_URL=amqp://guest:guest@rabbitmq:5672//
+      - TASK_DELAY=20
+      - OTEL_SERVICE_NAME=generator3
+      - OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
+      - OTEL_EXPORTER_OTLP_LOGS_ENDPOINT=http://otel-collector:4318/v1/logs
+      - OTEL_EXPORTER_OTLP_METRICS_ENDPOINT=http://otel-collector:4318/v1/metrics
+      - OTEL_EXPORTER_OTLP_TRACES_ENDPOINT=http://otel-collector:4318/v1/traces
+    depends_on:
+      - rabbitmq
+      - otel-collector
+      - celery_worker1
+      - celery_worker2
+    networks:
+      - mynetwork
+
+  task_generator4:
+    container_name: task_generator4
+    build: ./task_generators
+    command: sh -c "sleep 5 && opentelemetry-instrument python generator4.py"
+    environment:
+      - CELERY_BROKER_URL=amqp://guest:guest@rabbitmq:5672//
+      - TASK_DELAY=25
+      - OTEL_SERVICE_NAME=generator4
+      - OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
+      - OTEL_EXPORTER_OTLP_LOGS_ENDPOINT=http://otel-collector:4318/v1/logs
+      - OTEL_EXPORTER_OTLP_METRICS_ENDPOINT=http://otel-collector:4318/v1/metrics
+      - OTEL_EXPORTER_OTLP_TRACES_ENDPOINT=http://otel-collector:4318/v1/traces
+    depends_on:
+      - rabbitmq
+      - otel-collector
+      - celery_worker1
+      - celery_worker2
+    networks:
+      - mynetwork
+
+networks:
+  mynetwork:
+    driver: bridge
