@@ -35,31 +35,31 @@ services:
       - OTEL_EXPORTER_OTLP_LOGS_ENDPOINT=http://otel-collector:4318/v1/logs
       - OTEL_EXPORTER_OTLP_METRICS_ENDPOINT=http://otel-collector:4318/v1/metrics
       - OTEL_EXPORTER_OTLP_TRACES_ENDPOINT=http://otel-collector:4318/v1/traces
-    command: opentelemetry-instrument celery -A celery_app.celery:app worker --loglevel=debug -Q queue1,queue2,queue3,queue4
+    command: opentelemetry-instrument celery flower -A celery_app.celery:app worker --loglevel=debug -Q queue1,queue2,queue3,queue4 --port=5556
     depends_on:
       - rabbitmq
       - otel-collector
     networks:
       - mynetwork
 
-#  celery_worker2:
-#    container_name: celery_worker2
-#    build: ./celery_app
-#    volumes:
-#      - ./tasks:/code/tasks
-#    environment:
-#      - CELERY_BROKER_URL=amqp://guest:guest@rabbitmq:5672//
-#      - OTEL_SERVICE_NAME=worker2
-#      - OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
-#      - OTEL_EXPORTER_OTLP_LOGS_ENDPOINT=http://otel-collector:4318/v1/logs
-#      - OTEL_EXPORTER_OTLP_METRICS_ENDPOINT=http://otel-collector:4318/v1/metrics
-#      - OTEL_EXPORTER_OTLP_TRACES_ENDPOINT=http://otel-collector:4318/v1/traces
-#    command: opentelemetry-instrument celery -A celery_app.celery:app worker --loglevel=info -Q queue1,queue2,queue3,queue4
-#    depends_on:
-#      - rabbitmq
-#      - otel-collector
-#    networks:
-#      - mynetwork
+  celery_worker2:
+    container_name: celery_worker2
+    build: ./celery_app
+    volumes:
+      - ./tasks:/code/tasks
+    environment:
+      - CELERY_BROKER_URL=amqp://guest:guest@rabbitmq:5672//
+      - OTEL_SERVICE_NAME=worker2
+      - OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
+      - OTEL_EXPORTER_OTLP_LOGS_ENDPOINT=http://otel-collector:4318/v1/logs
+      - OTEL_EXPORTER_OTLP_METRICS_ENDPOINT=http://otel-collector:4318/v1/metrics
+      - OTEL_EXPORTER_OTLP_TRACES_ENDPOINT=http://otel-collector:4318/v1/traces
+    command: opentelemetry-instrument celery flower -A celery_app.celery:app worker --loglevel=info -Q queue1,queue2,queue3,queue4 --port=5555
+    depends_on:
+      - rabbitmq
+      - otel-collector
+    networks:
+      - mynetwork
 
   flower:
     container_name: flower
