@@ -1,0 +1,79 @@
+# Compiled source #
+###################
+*.com
+*.class
+*.dll
+*.exe
+*.o
+*.so
+
+# Packages #
+############
+*.7z
+*.dmg
+*.gz
+*.iso
+*.jar
+*.rar
+*.tar
+*.zip
+
+# Logs and databases #
+######################
+*.log
+*.sqlite
+*.db
+
+# OS generated files #
+######################
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE and Editor files #
+########################
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Dependency directories #
+##########################
+node_modules/
+bower_components/
+jspm_packages/
+
+# Build output #
+################
+dist/
+build/
+out/
+target/
+
+# Environment and configuration #
+#################################
+.env
+.venv
+env/
+venv/
+ENV/
+
+# Backup files #
+################
+*.bak
+*.gho
+*.ori
+*.orig
+*.tmp
+
+# Miscellaneous #
+#################
+.cache
+.pytest_cache/
+*.pyc
+__pycache__/

@@ -18,9 +18,9 @@ processors:
     timeout: 10s
 exporters:
   debug:
-    verbosity: detailed
+#    verbosity: detailed
   otlp:
-    endpoint: "host.docker.internal:55995"
+    endpoint: "host.docker.internal:60737"
     tls:
       insecure: true
 service:

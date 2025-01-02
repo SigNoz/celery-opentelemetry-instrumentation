@@ -35,7 +35,7 @@ services:
       - OTEL_EXPORTER_OTLP_LOGS_ENDPOINT=http://otel-collector:4318/v1/logs
       - OTEL_EXPORTER_OTLP_METRICS_ENDPOINT=http://otel-collector:4318/v1/metrics
       - OTEL_EXPORTER_OTLP_TRACES_ENDPOINT=http://otel-collector:4318/v1/traces
-    command: opentelemetry-instrument celery flower -A celery_app.celery:app worker --loglevel=debug -Q queue1,queue2,queue3,queue4 --port=5556
+    command: opentelemetry-instrument celery -A celery_app.celery:app worker --loglevel=info -Q queue1,queue2,queue3,queue4
     depends_on:
       - rabbitmq
       - otel-collector
@@ -54,7 +54,7 @@ services:
       - OTEL_EXPORTER_OTLP_LOGS_ENDPOINT=http://otel-collector:4318/v1/logs
       - OTEL_EXPORTER_OTLP_METRICS_ENDPOINT=http://otel-collector:4318/v1/metrics
       - OTEL_EXPORTER_OTLP_TRACES_ENDPOINT=http://otel-collector:4318/v1/traces
-    command: opentelemetry-instrument celery flower -A celery_app.celery:app worker --loglevel=info -Q queue1,queue2,queue3,queue4 --port=5555
+    command: opentelemetry-instrument celery -A celery_app.celery:app worker --loglevel=info -Q queue1,queue2,queue3,queue4
     depends_on:
       - rabbitmq
       - otel-collector
@@ -91,7 +91,7 @@ services:
       - rabbitmq
       - otel-collector
       - celery_worker1
-#      - celery_worker2
+      - celery_worker2
     networks:
       - mynetwork
 
@@ -111,7 +111,7 @@ services:
       - rabbitmq
       - otel-collector
       - celery_worker1
-#      - celery_worker2
+      - celery_worker2
     networks:
       - mynetwork
 
@@ -131,7 +131,7 @@ services:
       - rabbitmq
       - otel-collector
       - celery_worker1
-#      - celery_worker2
+      - celery_worker2
     networks:
       - mynetwork
 
@@ -151,7 +151,7 @@ services:
       - rabbitmq
       - otel-collector
       - celery_worker1
-#      - celery_worker2
+      - celery_worker2
     networks:
       - mynetwork
 
