@@ -158,3 +158,13 @@ services:
 networks:
   mynetwork:
     driver: bridge
+
+
+# /usr/local/lib/python3.9/site-packages/opentelemetry/instrumentation/celery/utils.py
+# 80j
+
+# [{Key:messaging.destination, Value:queue1}, {Key:celery.action, Value:apply_async}, {Key:messaging.message.id, Value:3e0979e7-6fc2-4a27-bac3-12c458126b05}, {Key:celery.task_name, Value:tasks.tasks.add}, {Key:messaging.destination_kind, Value:queue}]
+
+# [{Key:celery.action, Value:apply_async}, 
+
+# {Key:celery.task_name, Value:tasks.tasks.add}, 
