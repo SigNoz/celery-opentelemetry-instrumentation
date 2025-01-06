@@ -20,7 +20,7 @@ exporters:
   debug:
 #    verbosity: detailed
   otlp:
-    endpoint: "host.docker.internal:50664"
+    endpoint: "host.docker.internal:63145"
     tls:
       insecure: true
 service:
