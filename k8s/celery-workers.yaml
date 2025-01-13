@@ -1,0 +1,87 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: celery-worker1
+  namespace: celery-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: celery-worker1
+  template:
+    metadata:
+      labels:
+        app: celery-worker1
+    spec:
+      containers:
+        - name: celery-worker1
+          image: shivanshu1333/celery-app:latest
+          imagePullPolicy: Always
+          command: ["opentelemetry-instrument"]
+          args: ["celery", "-A", "celery_app.celery:app", "worker", "--loglevel=info", "-Q", "queue1,queue2,queue3,queue4"]
+          workingDir: /code
+          volumeMounts:
+            - name: tasks-volume
+              mountPath: /code/tasks
+          env:
+            - name: CELERY_BROKER_URL
+              value: "amqp://guest:guest@rabbitmq-service:5672//"
+            - name: OTEL_SERVICE_NAME
+              value: "worker1"
+            - name: OTEL_EXPORTER_OTLP_PROTOCOL
+              value: "http/protobuf"
+            - name: OTEL_EXPORTER_OTLP_LOGS_ENDPOINT
+              value: "http://otel-collector-service:4318/v1/logs"
+            - name: OTEL_EXPORTER_OTLP_METRICS_ENDPOINT
+              value: "http://otel-collector-service:4318/v1/metrics"
+            - name: OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
+              value: "http://otel-collector-service:4318/v1/traces"
+            - name: PYTHONPATH
+              value: "/code"
+      volumes:
+        - name: tasks-volume
+          emptyDir: {}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: celery-worker2
+  namespace: celery-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: celery-worker2
+  template:
+    metadata:
+      labels:
+        app: celery-worker2
+    spec:
+      containers:
+        - name: celery-worker2
+          image: shivanshu1333/celery-app:latest
+          imagePullPolicy: Always
+          command: ["opentelemetry-instrument"]
+          args: ["celery", "-A", "celery_app.celery:app", "worker", "--loglevel=info", "-Q", "queue1,queue2,queue3,queue4"]
+          workingDir: /code
+          volumeMounts:
+            - name: tasks-volume
+              mountPath: /code/tasks
+          env:
+            - name: CELERY_BROKER_URL
+              value: "amqp://guest:guest@rabbitmq-service:5672//"
+            - name: OTEL_SERVICE_NAME
+              value: "worker2"
+            - name: OTEL_EXPORTER_OTLP_PROTOCOL
+              value: "http/protobuf"
+            - name: OTEL_EXPORTER_OTLP_LOGS_ENDPOINT
+              value: "http://otel-collector-service:4318/v1/logs"
+            - name: OTEL_EXPORTER_OTLP_METRICS_ENDPOINT
+              value: "http://otel-collector-service:4318/v1/metrics"
+            - name: OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
+              value: "http://otel-collector-service:4318/v1/traces"
+            - name: PYTHONPATH
+              value: "/code"
+      volumes:
+        - name: tasks-volume
+          emptyDir: {} 

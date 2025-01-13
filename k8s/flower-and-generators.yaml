@@ -1,0 +1,178 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: flower-service
+  namespace: celery-system
+spec:
+  selector:
+    app: flower
+  ports:
+    - port: 5555
+      targetPort: 5555
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flower
+  namespace: celery-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: flower
+  template:
+    metadata:
+      labels:
+        app: flower
+    spec:
+      containers:
+        - name: flower
+          image: shivanshu1333/celery-flower:latest  # Update this line for flower
+          ports:
+            - containerPort: 5555
+          env:
+            - name: CELERY_BROKER_URL
+              value: "amqp://guest:guest@rabbitmq-service:5672//"
+          command: ["celery"]
+          args: ["--broker=amqp://guest:guest@rabbitmq-service:5672//", "flower", "--port=5555"]
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: task-generators1
+  namespace: celery-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: task-generators1
+  template:
+    metadata:
+      labels:
+        app: task-generators1
+    spec:
+      containers:
+        - name: generator1
+          image: shivanshu1333/task-generators:latest  # Update this line for all generators
+          command: ["sh", "-c", "sleep 5 && opentelemetry-instrument python generator1.py"]
+          env:
+            - name: CELERY_BROKER_URL
+              value: "amqp://guest:guest@rabbitmq-service:5672//"
+            - name: TASK_DELAY
+              value: "10"
+            - name: OTEL_SERVICE_NAME
+              value: "generator1"
+            - name: OTEL_EXPORTER_OTLP_PROTOCOL
+              value: "http/protobuf"
+            - name: OTEL_EXPORTER_OTLP_LOGS_ENDPOINT
+              value: "http://otel-collector-service:4318/v1/logs"
+            - name: OTEL_EXPORTER_OTLP_METRICS_ENDPOINT
+              value: "http://otel-collector-service:4318/v1/metrics"
+            - name: OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
+              value: "http://otel-collector-service:4318/v1/traces"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: task-generators2
+  namespace: celery-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: task-generators2
+  template:
+    metadata:
+      labels:
+        app: task-generators2
+    spec:
+      containers:
+        - name: generator2
+          image: shivanshu1333/task-generators:latest  # Update this line for all generators
+          command: ["sh", "-c", "sleep 5 && opentelemetry-instrument python generator2.py"]
+          env:
+            - name: CELERY_BROKER_URL
+              value: "amqp://guest:guest@rabbitmq-service:5672//"
+            - name: TASK_DELAY
+              value: "15"
+            - name: OTEL_SERVICE_NAME
+              value: "generator1"
+            - name: OTEL_EXPORTER_OTLP_PROTOCOL
+              value: "http/protobuf"
+            - name: OTEL_EXPORTER_OTLP_LOGS_ENDPOINT
+              value: "http://otel-collector-service:4318/v1/logs"
+            - name: OTEL_EXPORTER_OTLP_METRICS_ENDPOINT
+              value: "http://otel-collector-service:4318/v1/metrics"
+            - name: OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
+              value: "http://otel-collector-service:4318/v1/traces"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: task-generators3
+  namespace: celery-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: task-generators3
+  template:
+    metadata:
+      labels:
+        app: task-generators3
+    spec:
+      containers:
+        - name: generator3
+          image: shivanshu1333/task-generators:latest  # Update this line for all generators
+          command: ["sh", "-c", "sleep 5 && opentelemetry-instrument python generator3.py"]
+          env:
+            - name: CELERY_BROKER_URL
+              value: "amqp://guest:guest@rabbitmq-service:5672//"
+            - name: TASK_DELAY
+              value: "20"
+            - name: OTEL_SERVICE_NAME
+              value: "generator1"
+            - name: OTEL_EXPORTER_OTLP_PROTOCOL
+              value: "http/protobuf"
+            - name: OTEL_EXPORTER_OTLP_LOGS_ENDPOINT
+              value: "http://otel-collector-service:4318/v1/logs"
+            - name: OTEL_EXPORTER_OTLP_METRICS_ENDPOINT
+              value: "http://otel-collector-service:4318/v1/metrics"
+            - name: OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
+              value: "http://otel-collector-service:4318/v1/traces"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: task-generators4
+  namespace: celery-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: task-generators4
+  template:
+    metadata:
+      labels:
+        app: task-generators4
+    spec:
+      containers:
+        - name: generator4
+          image: shivanshu1333/task-generators:latest  # Update this line for all generators
+          command: ["sh", "-c", "sleep 5 && opentelemetry-instrument python generator4.py"]
+          env:
+            - name: CELERY_BROKER_URL
+              value: "amqp://guest:guest@rabbitmq-service:5672//"
+            - name: TASK_DELAY
+              value: "25"
+            - name: OTEL_SERVICE_NAME
+              value: "generator1"
+            - name: OTEL_EXPORTER_OTLP_PROTOCOL
+              value: "http/protobuf"
+            - name: OTEL_EXPORTER_OTLP_LOGS_ENDPOINT
+              value: "http://otel-collector-service:4318/v1/logs"
+            - name: OTEL_EXPORTER_OTLP_METRICS_ENDPOINT
+              value: "http://otel-collector-service:4318/v1/metrics"
+            - name: OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
+              value: "http://otel-collector-service:4318/v1/traces"

@@ -1,0 +1,43 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: otel-collector-config
+  namespace: celery-system
+data:
+  config.yaml: |
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+            endpoint: 0.0.0.0:4317
+          http:
+            endpoint: 0.0.0.0:4318
+      prometheus:
+        config:
+          scrape_configs:
+            - job_name: 'flower'
+              scrape_interval: 1s
+              metrics_path: /metrics
+              static_configs:
+                - targets: ['flower-service:5555']
+    processors:
+      batch:
+        timeout: 10s
+    exporters:
+      otlp:
+        endpoint: "ingest.in.signoz.cloud:443"
+        tls:
+          insecure: false
+        headers:
+          "signoz-ingestion-key": "9IHN5B2ZZKwQLMvDGZlIuyo0iC1oj7OU1pg2"
+    service:
+      pipelines:
+        metrics:
+          receivers: [otlp, prometheus]
+          exporters: [otlp, debug]
+        logs:
+          receivers: [otlp]
+          exporters: [otlp, debug]
+        traces:
+          receivers: [otlp]
+          exporters: [otlp, debug] 

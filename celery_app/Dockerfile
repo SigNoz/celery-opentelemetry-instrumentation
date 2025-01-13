@@ -27,6 +27,7 @@ RUN opentelemetry-bootstrap --action=install
 
 # Copy application code
 COPY . /code/celery_app/
+RUN mv /code/celery_app/tasks /code/tasks
 
 # Copy and set entrypoint script
 COPY entrypoint.sh /entrypoint.sh
@@ -35,4 +36,3 @@ RUN chmod +x /entrypoint.sh
 # Set the entrypoint and default command
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["opentelemetry-instrument", "celery", "-A", "celery_app.celery:app", "worker", "--loglevel=info", "-Q", "queue1,queue2,queue3,queue4"]
-

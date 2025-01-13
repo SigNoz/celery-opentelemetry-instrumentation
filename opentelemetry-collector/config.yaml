@@ -20,9 +20,11 @@ exporters:
   debug:
 #    verbosity: detailed
   otlp:
-    endpoint: "host.docker.internal:63145"
+    endpoint: "ingest.in.signoz.cloud:443"
     tls:
-      insecure: true
+      insecure: false
+    headers:
+      "signoz-ingestion-key": "9IHN5B2ZZKwQLMvDGZlIuyo0iC1oj7OU1pg2"
 service:
   pipelines:
     metrics:
