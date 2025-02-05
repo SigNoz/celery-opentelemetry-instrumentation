@@ -4,6 +4,8 @@ This project demonstrates how to instrument a Celery application with OpenTeleme
 
 ## Architecture
 
+![image (1)](https://github.com/user-attachments/assets/c6d6101f-1ac9-4dd6-99ed-b6eee78ff464)
+
 The project consists of the following components:
 
 - **Celery Workers**: Process tasks from 4 different queues
